@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LYPSYFLOW</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Sora:wght@400;600;700&display=swap');
+
+  :root {
+    --red: #E8433A;
+    --red-light: #FFF0EF;
+    --red-border: #F5A09B;
+    --orange: #F08030;
+    --orange-light: #FFF5EC;
+    --orange-border: #F5C49A;
+    --green: #3AAE6E;
+    --green-light: #EDFBF4;
+    --green-border: #9AD9BB;
+    --blue: #3A87C8;
+    --blue-light: #EEF6FF;
+    --blue-border: #9AC5E8;
+    --bg: #F5F0E8;
+    --card: #FFFFFF;
+    --text: #2A2118;
+    --muted: #8A7D6E;
+    --shadow: 0 2px 12px rgba(42,33,24,0.08);
+    --shadow-lg: 0 4px 24px rgba(42,33,24,0.14);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--text);
+    color: white;
+    padding: 18px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-icon { font-size: 28px; line-height: 1; }
+  .header-title { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; line-height: 1.2; }
+  .header-sub { font-size: 12px; opacity: 0.65; font-weight: 400; }
+  .datetime {
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.85;
+    line-height: 1.5;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: white;
+    border-bottom: 2px solid var(--bg);
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 76px;
+    z-index: 99;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 1;
+    min-width: 90px;
+    padding: 13px 10px;
+    border: none;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.18s;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+  .tab:hover:not(.active) { color: var(--text); background: var(--bg); }
+
+  /* MAIN */
+  .main { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* WATER REMINDER */
+  .water-bar {
+    background: var(--blue-light);
+    border: 2px solid var(--blue-border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .water-bar .icon { font-size: 28px; flex-shrink: 0; }
+  .water-bar .text { flex: 1; font-size: 15px; font-weight: 700; color: var(--blue); }
+  .water-btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* CHECKLIST HEADER */
+  .checklist-header {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .checklist-header h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .progress-ring {
+    width: 52px; height: 52px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  /* GROUP */
+  .group { margin-bottom: 12px; }
+  .group-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .group-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* TASK ITEM */
+  .task {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    border: 2px solid transparent;
+    padding: 0;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .task.done {
+    opacity: 0.55;
+    box-shadow: none;
+  }
+  .task-main {
+    display: flex;
+    align-items: stretch;
+    min-height: 58px;
+  }
+  .task-color-bar {
+    width: 6px;
+    flex-shrink: 0;
+    border-radius: 0;
+  }
+  .task-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .task-check {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: 2.5px solid #D0C8BC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-size: 16px;
+    background: white;
+  }
+  .task.done .task-check {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+  .task-label {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    flex: 1;
+    transition: all 0.15s;
+  }
+  .task.done .task-label {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+  .task-time {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  /* PRIORITY COLORS */
+  .red .task-color-bar { background: var(--red); }
+  .orange .task-color-bar { background: var(--orange); }
+  .green .task-color-bar { background: var(--green); }
+
+  /* ADD TASK */
+  .add-task-area {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+    margin-top: 10px;
+  }
+  .add-task-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .add-task-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .add-task-input {
+    flex: 1;
+    border: 2px solid #E8E0D4;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .add-task-input:focus { border-color: var(--text); }
+  .add-task-select {
+    border: 2px solid #E8E0D4;
+    border-radius: 8px;
+    padding: 10px 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+  }
+  .add-task-btn {
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  /* RESET */
+  .reset-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+  }
+  .reset-btn {
+    background: transparent;
+    border: 2px solid #D0C8BC;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* NEXT STEP BOX */
+  .next-step {
+    background: var(--text);
+    color: white;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow-lg);
+  }
+  .next-step .icon { font-size: 28px; flex-shrink: 0; }
+  .next-step .label { font-size: 12px; opacity: 0.6; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .next-step .task-name { font-size: 18px; font-weight: 800; font-family: 'Sora', sans-serif; margin-top: 2px; }
+
+  /* CHECKLIST ITEMS */
+  .before-list { list-style: none; }
+  .before-item {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    border: 2px solid #E8E0D4;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .before-item.done { opacity: 0.5; text-decoration: line-through; }
+  .before-item .icon { font-size: 22px; }
+
+  /* EMERGENCY CARDS */
+  .emergency-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .emergency-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .emergency-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .emergency-card .e-icon { font-size: 32px; margin-bottom: 8px; }
+  .emergency-card .e-title { font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+  .emergency-card .e-steps { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .emergency-card.red-card { border-color: var(--red-border); background: var(--red-light); }
+  .emergency-card.orange-card { border-color: var(--orange-border); background: var(--orange-light); }
+  .emergency-card.blue-card { border-color: var(--blue-border); background: var(--blue-light); }
+
+  /* OVERLOAD */
+  .overload-card {
+    background: var(--blue-light);
+    border: 2px solid var(--blue-border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .overload-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 10px; color: var(--blue); }
+  .overload-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--blue-border);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .overload-step:last-child { border-bottom: none; }
+  .overload-step .num {
+    width: 24px; height: 24px;
+    background: var(--blue);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* BREAK CARDS */
+  .break-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .break-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .break-card:hover { border-color: var(--blue-border); transform: translateY(-2px); }
+  .break-card .b-icon { font-size: 32px; margin-bottom: 8px; }
+  .break-card .b-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+  .break-card .b-time { font-size: 12px; color: var(--blue); font-weight: 700; }
+
+  /* TIMER MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(42,33,24,0.6);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-icon { font-size: 48px; margin-bottom: 10px; }
+  .modal-title { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .modal-desc { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+  .timer-display {
+    font-family: 'Sora', sans-serif;
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    letter-spacing: -2px;
+  }
+  .modal-btn {
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .modal-close {
+    background: transparent;
+    border: 2px solid #E8E0D4;
+    border-radius: 10px;
+    padding: 11px 28px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    width: 100%;
+  }
+
+  /* SEASON TOGGLE */
+  .season-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+  .season-btn {
+    border: none;
+    border-radius: 16px;
+    padding: 5px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .season-btn.active {
+    background: white;
+    color: var(--text);
+  }
+
+  /* Hide summer-only tasks in winter mode */
+  body.talvi [data-season="kesa"] { display: none !important; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #E8E0D4;
+    color: var(--text);
+  }
+
+  /* PRINT STYLES */
+  @media print {
+    .tabs, .header { display: none !important; }
+    .section { display: block !important; page-break-after: always; }
+    .task, .before-item, .emergency-card, .break-card { break-inside: avoid; }
+    body { background: white; }
+    .modal-overlay { display: none !important; }
+  }
+
+  /* DESKTOP */
+  @media (min-width: 640px) {
+    .main { padding: 24px; }
+    .emergency-grid { grid-template-columns: 1fr 1fr 1fr; }
+    .break-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">🐄</div>
+    <div>
+      <div class="header-title">LYPSYFLOW</div>
+      <div class="header-sub">Sähköinen työkirja</div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+    <div class="datetime" id="datetime"></div>
+    <div class="season-toggle">
+      <button class="season-btn" id="btn-talvi" onclick="setSeason('talvi')">❄️ Talvi</button>
+      <button class="season-btn" id="btn-kesa" onclick="setSeason('kesa')">☀️ Kesä</button>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('ennen')">Ennen</button>
+  <button class="tab" onclick="showTab('aamu')">Aamunavetta</button>
+  <button class="tab" onclick="showTab('ilta')">Iltanavetta</button>
+  <button class="tab" onclick="showTab('poikkeus')">Hätä</button>
+  <button class="tab" onclick="showTab('tauko')">Tauot</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ENNEN -->
+  <div class="section active" id="section-ennen">
+    <div class="section-title">Ennen navettaan menoa</div>
+
+    <div class="water-bar">
+      <div class="icon">💧</div>
+      <div class="text">Juotko vettä ennen lähtöä?</div>
+      <button class="water-btn" onclick="drankWater(this)">✓ Juotu</button>
+    </div>
+
+    <p style="font-size:13px;color:var(--muted);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Tarkista mukaan:</p>
+    <ul class="before-list">
+      <li class="before-item" onclick="toggleBefore(this)">
+        <span class="icon">🧤</span> Hanskat
+      </li>
+      <li class="before-item" onclick="toggleBefore(this)">
+        <span class="icon">📱</span> Puhelin
+      </li>
+      <li class="before-item" onclick="toggleBefore(this)">
+        <span class="icon">💊</span> Lääkkeet
+      </li>
+      <li class="before-item" onclick="toggleBefore(this)">
+        <span class="icon">🔦</span> Taskulamppu
+      </li>
+      <li class="before-item" onclick="toggleBefore(this)">
+        <span class="icon">🔑</span> Avaimet
+      </li>
+    </ul>
+
+    <div style="background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-top:12px;">
+      <div style="font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Muista</div>
+      <div style="font-size:15px;font-weight:700;line-height:1.8;color:var(--text);">
+        ✦ Valitse vain <strong>yksi tavoite</strong> kerrallaan<br>
+        ✦ Et tee kaikkea täydellisesti<br>
+        ✦ Teet <strong>seuraavan asian</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- AAMUNAVETTA -->
+  <div class="section" id="section-aamu">
+    <div id="next-step-aamu" class="next-step" style="display:none">
+      <div class="icon">👉</div>
+      <div>
+        <div class="label">Seuraava vaihe</div>
+        <div class="task-name" id="next-step-aamu-text"></div>
+      </div>
+    </div>
+    <div class="checklist-header">
+      <div>
+        <h2>☀️ Aamunavetta</h2>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">Ruksaa heti kun valmis</div>
+      </div>
+      <div class="progress-ring">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#E8E0D4" stroke-width="4"/>
+          <circle id="aamu-ring" cx="26" cy="26" r="22" fill="none" stroke="#2A2118" stroke-width="4"
+            stroke-dasharray="138.2" stroke-dashoffset="138.2" stroke-linecap="round"/>
+        </svg>
+        <div class="progress-text" id="aamu-pct">0%</div>
+      </div>
+    </div>
+
+    <div class="reset-row">
+      <button class="reset-btn" onclick="resetList('aamu')">↺ Nollaa päivä</button>
+    </div>
+
+    <div id="aamu-tasks">
+      <!-- punainen -->
+      <div class="group">
+        <div class="group-label"><span class="group-dot" style="background:var(--red)"></span>🔴 Tehdään heti – kriittiset</div>
+        <div class="task red" data-season="kesa" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Lehmien haku pellolta</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" data-season="kesa" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Lehmien ohjaus oikeisiin parsiin</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Rehujen siirto ruokintapöydälle</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Ritilöiden puhdistus</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Parret puhtaaksi ja kuivitus</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Lypsimet paikalleen</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Lypsy</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Vasikoiden juotto</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Lypsykone pesuun</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- oranssi -->
+      <div class="group">
+        <div class="group-label"><span class="group-dot" style="background:var(--orange)"></span>🟠 Tärkeä – tehdään pian</div>
+        <div class="task orange" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Ulkoeläinten ruokinta</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task orange" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Eläinten voinnin tarkistus</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task orange" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Tarvittavat lääkitykset</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- vihreä -->
+      <div class="group">
+        <div class="group-label"><span class="group-dot" style="background:var(--green)"></span>🟢 Lopuksi – yhtä tärkeä</div>
+        <div class="task green" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Vasikkakarsinoiden puhdistus</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+        <div class="task green" onclick="toggleTask(this,'aamu')">
+          <div class="task-main">
+            <div class="task-color-bar"></div>
+            <div class="task-body">
+              <div class="task-check"></div>
+              <div class="task-label">Ruokintapöytien perusteellisempi puhdistus</div>
+              <div class="task-time"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- lisää oma -->
+    <div class="add-task-area">
+      <div class="add-task-title">+ Lisää oma tehtävä</div>
+      <div class="add-task-row">
+        <input class="add-task-input" type="text" id="add-aamu-input" placeholder="Tehtävä..." onkeydown="if(event.key==='Enter')addTask('aamu')">
+        <select class="add-task-select" id="add-aamu-prio">
+          <option value="red">🔴</option>
+          <option value="orange">🟠</option>
+          <option value="green">🟢</option>
+        </select>
+        <button class="add-task-btn" onclick="addTask('aamu')">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ILTANAVETTA -->
+  <div class="section" id="section-ilta">
+    <div id="next-step-ilta" class="next-step" style="display:none">
+      <div class="icon">👉</div>
+      <div>
+        <div class="label">Seuraava vaihe</div>
+        <div class="task-name" id="next-step-ilta-text"></div>
+      </div>
+    </div>
+    <div class="checklist-header">
+      <div>
+        <h2>🌙 Iltanavetta</h2>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">Ruksaa heti kun valmis</div>
+      </div>
+      <div class="progress-ring">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#E8E0D4" stroke-width="4"/>
+          <circle id="ilta-ring" cx="26" cy="26" r="22" fill="none" stroke="#2A2118" stroke-width="4"
+            stroke-dasharray="138.2" stroke-dashoffset="138.2" stroke-linecap="round"/>
+        </svg>
+        <div class="progress-text" id="ilta-pct">0%</div>
+      </div>
+    </div>
+
+    <div class="reset-row">
+      <button class="reset-btn" onclick="resetList('ilta')">↺ Nollaa päivä</button>
+    </div>
+
+    <div id="ilta-tasks">
+      <div class="group">
+        <div class="group-label"><span class="group-dot" style="background:var(--red)"></span>🔴 Tehdään heti – kriittiset</div>
+        <div class="task red" data-season="kesa" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Lehmien sisäänajo</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Rehujen siirto ruokintapöydälle</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Ritilöiden puhdistus</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Parret puhtaaksi ja kuivitus</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Lypsimet paikalleen</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Lypsy</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Vasikoiden juotto</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task red" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Lypsykone pesuun</div><div class="task-time"></div></div></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label"><span class="group-dot" style="background:var(--orange)"></span>🟠 Tärkeä – tehdään pian</div>
+        <div class="task orange" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Ulkoeläinten ruokinta</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task orange" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Eläinten voinnin tarkistus</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task orange" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Lääkitykset ja hoidot</div><div class="task-time"></div></div></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label"><span class="group-dot" style="background:var(--green)"></span>🟢 Lopuksi – yhtä tärkeä</div>
+        <div class="task green" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Vasikkakarsinoiden puhdistus</div><div class="task-time"></div></div></div>
+        </div>
+        <div class="task green" onclick="toggleTask(this,'ilta')">
+          <div class="task-main"><div class="task-color-bar"></div>
+          <div class="task-body"><div class="task-check"></div><div class="task-label">Ruokintapöytien siistiminen</div><div class="task-time"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="add-task-area">
+      <div class="add-task-title">+ Lisää oma tehtävä</div>
+      <div class="add-task-row">
+        <input class="add-task-input" type="text" id="add-ilta-input" placeholder="Tehtävä..." onkeydown="if(event.key==='Enter')addTask('ilta')">
+        <select class="add-task-select" id="add-ilta-prio">
+          <option value="red">🔴</option>
+          <option value="orange">🟠</option>
+          <option value="green">🟢</option>
+        </select>
+        <button class="add-task-btn" onclick="addTask('ilta')">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POIKKEUS -->
+  <div class="section" id="section-poikkeus">
+    <div class="section-title">Poikkeustilannekortit</div>
+
+    <div class="overload-card">
+      <h3>⚡ Jos ajatus katoaa tai kuorma nousee</h3>
+      <div class="overload-step"><div class="num">1</div><div>Pysähdy 30 sekunniksi</div></div>
+      <div class="overload-step"><div class="num">2</div><div>Katso viimeinen ruksattu kohta</div></div>
+      <div class="overload-step"><div class="num">3</div><div>Tee vain <strong>seuraava vaihe</strong></div></div>
+      <div class="overload-step"><div class="num">4</div><div>Älä suunnittele koko loppupäivää</div></div>
+      <div class="overload-step"><div class="num">5</div><div>Juo vettä</div></div>
+      <div class="overload-step"><div class="num">6</div><div>Jos mahdollista: 2 min hengähdystauko</div></div>
+    </div>
+
+    <div class="emergency-grid">
+      <div class="emergency-card red-card">
+        <div class="e-icon">🐄</div>
+        <div class="e-title">Sairas eläin</div>
+        <div class="e-steps">Pysähdy<br>Arvioi hengitys, syönti, liikkuminen<br>Merkitse eläin näkyvästi<br>Soita apua tarvittaessa<br>Kirjaa lääkitys heti</div>
+      </div>
+      <div class="emergency-card orange-card">
+        <div class="e-icon">⚙️</div>
+        <div class="e-title">Konevika</div>
+        <div class="e-steps">Turvaa eläimet ensin<br>Älä yritä ratkaista kaikkea heti<br>Kirjaa mitä ei voitu tehdä<br>Pyydä apua aikaisin</div>
+      </div>
+      <div class="emergency-card blue-card" style="grid-column: 1 / -1;">
+        <div class="e-icon">🧠</div>
+        <div class="e-title">Ylikuormitus</div>
+        <div class="e-steps">Keskity punaisiin ensin&nbsp;&nbsp;·&nbsp;&nbsp;Vihreät voi siirtää myöhemmäksi&nbsp;&nbsp;·&nbsp;&nbsp;Pidä 5 minuutin tauko&nbsp;&nbsp;·&nbsp;&nbsp;Syö jotain</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAUKO -->
+  <div class="section" id="section-tauko">
+    <div class="section-title">Taukoideat</div>
+    <div class="break-grid">
+      <div class="break-card" onclick="startTimer(60,'🌬️','Ulkoilu','Käy ulkona minuutin ajan')">
+        <div class="b-icon">🌬️</div>
+        <div class="b-title">Ulkoilu</div>
+        <div class="b-time">1 min</div>
+      </div>
+      <div class="break-card" onclick="startTimer(120,'🙆','Venyttely','Venytä hartiat ja niska')">
+        <div class="b-icon">🙆</div>
+        <div class="b-title">Venyttely</div>
+        <div class="b-time">2 min</div>
+      </div>
+      <div class="break-card" onclick="startTimer(120,'🍎','Välipala','Syö tai juo jotain')">
+        <div class="b-icon">🍎</div>
+        <div class="b-title">Välipala</div>
+        <div class="b-time">2 min</div>
+      </div>
+      <div class="break-card" onclick="startTimer(120,'🤫','Hiljaisuus','Hiljainen hetki ilman puhetta')">
+        <div class="b-icon">🤫</div>
+        <div class="b-title">Hiljaisuus</div>
+        <div class="b-time">2 min</div>
+      </div>
+      <div class="break-card" onclick="startTimer(300,'🎧','Kuulosuojaimet','Kuulosuojaimet hetkeksi')">
+        <div class="b-icon">🎧</div>
+        <div class="b-title">Kuulosuojaimet</div>
+        <div class="b-time">5 min</div>
+      </div>
+      <div class="break-card" onclick="startTimer(120,'💺','Istuutuminen','Istahda alas edes kahdeksi minuutiksi')">
+        <div class="b-icon">💺</div>
+        <div class="b-title">Istuutuminen</div>
+        <div class="b-time">2 min</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- TIMER MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon" id="modal-icon"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-desc" id="modal-desc"></div>
+    <div class="timer-display" id="timer-display">0:00</div>
+    <button class="modal-btn" id="modal-action" onclick="toggleTimer()">▶ Käynnistä</button>
+    <button class="modal-close" onclick="closeModal()">Sulje</button>
+  </div>
+</div>
+
+<script>
+// === DATETIME ===
+function updateClock() {
+  const now = new Date();
+  const days = ['Su','Ma','Ti','Ke','To','Pe','La'];
+  const d = days[now.getDay()];
+  const date = `${d} ${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}`;
+  const time = now.toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('datetime').innerHTML = `<div>${date}</div><div style="font-size:18px;font-weight:800;">${time}</div>`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// === TABS ===
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// === BEFORE CHECKLIST ===
+function toggleBefore(el) {
+  el.classList.toggle('done');
+}
+
+function drankWater(btn) {
+  btn.textContent = '✓ Juotu!';
+  btn.style.background = 'var(--green)';
+  btn.disabled = true;
+}
+
+// === TASK TOGGLE ===
+function toggleTask(el, list) {
+  el.classList.toggle('done');
+  const timeEl = el.querySelector('.task-time');
+  if (el.classList.contains('done')) {
+    const now = new Date();
+    timeEl.textContent = now.toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit'});
+  } else {
+    timeEl.textContent = '';
+  }
+  updateProgress(list);
+  updateNextStep(list);
+}
+
+function updateProgress(list) {
+  const container = document.getElementById(list+'-tasks');
+  const all = [...container.querySelectorAll('.task')].filter(t => t.offsetParent !== null);
+  const done = all.filter(t => t.classList.contains('done'));
+  const pct = all.length ? Math.round(done.length/all.length*100) : 0;
+  document.getElementById(list+'-pct').textContent = pct+'%';
+  const circ = 138.2;
+  document.getElementById(list+'-ring').style.strokeDashoffset = circ - (circ * pct / 100);
+}
+
+function updateNextStep(list) {
+  const container = document.getElementById(list+'-tasks');
+  const tasks = [...container.querySelectorAll('.task:not(.done)')].filter(t => t.offsetParent !== null);
+  const box = document.getElementById('next-step-'+list);
+  const txt = document.getElementById('next-step-'+list+'-text');
+  if (tasks.length > 0) {
+    const label = tasks[0].querySelector('.task-label').textContent;
+    txt.textContent = label;
+    box.style.display = 'flex';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function resetList(list) {
+  if (!confirm('Nollataan kaikki tehtävät?')) return;
+  const container = document.getElementById(list+'-tasks');
+  container.querySelectorAll('.task').forEach(t => {
+    t.classList.remove('done');
+    const time = t.querySelector('.task-time');
+    if (time) time.textContent = '';
+  });
+  updateProgress(list);
+  updateNextStep(list);
+}
+
+// === ADD TASK ===
+function addTask(list) {
+  const input = document.getElementById('add-'+list+'-input');
+  const prio = document.getElementById('add-'+list+'-prio').value;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const container = document.getElementById(list+'-tasks');
+  const groups = container.querySelectorAll('.group');
+  let targetGroup = groups[0];
+  const colorMap = { red: 'var(--red)', orange: 'var(--orange)', green: 'var(--green)' };
+  groups.forEach(g => {
+    const dot = g.querySelector('.group-dot');
+    if (dot && dot.style.background === colorMap[prio]) targetGroup = g;
+  });
+
+  const div = document.createElement('div');
+  div.className = 'task '+prio;
+  div.onclick = function(){ toggleTask(this, list); };
+  div.innerHTML = `<div class="task-main">
+    <div class="task-color-bar"></div>
+    <div class="task-body">
+      <div class="task-check"></div>
+      <div class="task-label">${text}</div>
+      <div class="task-time"></div>
+    </div>
+  </div>`;
+  targetGroup.appendChild(div);
+  input.value = '';
+  updateProgress(list);
+  updateNextStep(list);
+}
+
+// === TIMER ===
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+
+function startTimer(secs, icon, title, desc) {
+  timerSeconds = secs;
+  timerRunning = false;
+  if (timerInterval) clearInterval(timerInterval);
+  document.getElementById('modal-icon').textContent = icon;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-desc').textContent = desc;
+  document.getElementById('modal-action').textContent = '▶ Käynnistä';
+  renderTimer();
+  document.getElementById('modal').classList.add('open');
+}
+
+function renderTimer() {
+  const m = Math.floor(timerSeconds/60);
+  const s = timerSeconds%60;
+  document.getElementById('timer-display').textContent = m+':'+(s<10?'0':'')+s;
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('modal-action').textContent = '▶ Jatka';
+  } else {
+    timerRunning = true;
+    document.getElementById('modal-action').textContent = '⏸ Pysäytä';
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      renderTimer();
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('timer-display').textContent = '✓';
+        document.getElementById('modal-action').textContent = 'Valmis!';
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          new Notification('Tauko ohi!', {body: 'Hyvin tehty. Palaa töihin kun olet valmis.'});
+        }
+      }
+    }, 1000);
+  }
+}
+
+function closeModal() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  document.getElementById('modal').classList.remove('open');
+}
+
+// === SEASON TOGGLE ===
+function setSeason(season) {
+  document.body.classList.toggle('talvi', season === 'talvi');
+  document.getElementById('btn-talvi').classList.toggle('active', season === 'talvi');
+  document.getElementById('btn-kesa').classList.toggle('active', season === 'kesa');
+  localStorage.setItem('navetta-season', season);
+  updateProgress('aamu');
+  updateNextStep('aamu');
+  updateProgress('ilta');
+  updateNextStep('ilta');
+}
+
+// Restore saved season, default to talvi
+setSeason(localStorage.getItem('navetta-season') || 'talvi');
+
+// Init next step hints
+updateNextStep('aamu');
+updateNextStep('ilta');
+</script>
+</body>
+</html>
